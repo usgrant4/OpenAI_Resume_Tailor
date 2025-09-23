@@ -11,11 +11,11 @@ It converts resumes from **Markdown** (or PDF) into a recruiter-friendly Markdow
 
 resume-tailor/
 ├── resume/
-│   ├── Ulysses\_Grant.md          # Original resume in Markdown
-│   ├── job\_description.md        # Target job description in Markdown
-│   └── Ulysses\_Grant\_Tailored.md # Auto-generated tailored resume
-├── tailor\_resume.py              # Main script for tailoring
-├── convert\_pdf\_to\_md\_resume.py   # Optional: Convert PDF → Markdown + tailor
+│   ├── Ulysses_Grant.md          # Original resume in Markdown
+│   ├── job_description.md        # Target job description in Markdown
+│   └── Ulysses_Grant_Tailored.md # Auto-generated tailored resume
+├── tailor_resume.py              # Main script for tailoring
+├── convert_pdf_to_md_resume.py   # Optional: Convert PDF → Markdown + tailor
 ├── .gitignore
 └── README.md
 
