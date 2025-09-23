@@ -107,4 +107,4 @@ python tailor_resume.py \
 * [LinkedIn](https://www.linkedin.com/in/usgrant4/)
 * [GitHub](https://github.com/usgrnt4)
 
-```
+---
