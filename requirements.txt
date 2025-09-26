@@ -1,0 +1,13 @@
+# Python Libraries
+openai
+python-dotenv
+pdfplumber
+python-docx
+pypandoc-binary
+
+# NOTE: For PDF export (--export-format pdf), Pandoc requires a system-level
+
+# LaTeX installation. Please install LaTeX separately based on your OS:
+# - Windows:   Install MiKTeX (https://miktex.org/)
+# - macOS:     Install MacTeX (https://www.tug.org/mactex/)
+# - Linux:     Install TeX Live (e.g., sudo apt-get install texlive-full)

@@ -1,4 +1,3 @@
-# UPDATE: Added logging for structured, leveled output.
 import argparse
 import logging
 import os
@@ -20,7 +19,6 @@ CONFIG = {
     "fallback_jd": "resume/job_description.md",
 }
 
-# UPDATE: Set up a basic logger.
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 
 # --- API Initialization ---
@@ -34,7 +32,6 @@ try:
 except ImportError:
     logging.error("The 'openai' library is not installed. Please install it with: pip install openai")
     sys.exit(1)
-
 
 # --- File Readers ---
 def read_text(path: str) -> str:
@@ -61,7 +58,6 @@ def extract_pdf_text(pdf_path: str) -> str:
         raise RuntimeError("No text extracted from PDF (it may be image-based).")
     return text
 
-# NEW: Added support for reading .docx files.
 def extract_docx_text(docx_path: str) -> str:
     """Extracts text from a DOCX file."""
     try:
@@ -75,7 +71,6 @@ def extract_docx_text(docx_path: str) -> str:
 # --- Core Logic ---
 def build_prompt(resume_content: str, jd_content: str) -> str:
     """Builds the prompt to be sent to the OpenAI API."""
-    # UPDATE: The f-string is now returned directly for conciseness.
     return f"""
 You are an expert resume editor who writes concise, professional Markdown tailored to the target role. I have a resume and a job description. Please adapt my resume to better align with the job requirements while maintaining a professional and concise tone.
 
@@ -90,11 +85,8 @@ Return ONLY the updated resume in Markdown format.
 {jd_content}
 """.strip()
 
-def call_openai(prompt: str, model: str, temperature: float, stream: bool = True):
-    """
-    Calls the OpenAI API and yields the response content.
-    UPDATE: Now supports streaming for real-time feedback.
-    """
+def call_openai(prompt: str, model: str, temperature: float):
+    """Calls the OpenAI API and yields the response content."""
     try:
         stream = client.chat.completions.create(
             model=model,
@@ -103,33 +95,51 @@ def call_openai(prompt: str, model: str, temperature: float, stream: bool = True
                 {"role": "user", "content": prompt},
             ],
             temperature=temperature,
-            stream=True, # Always stream for better UX
+            stream=True,
         )
         for chunk in stream:
             content = chunk.choices[0].delta.content
             if content:
                 yield content
     except openai.APIError as e:
-        # NEW: Added specific error handling for API calls.
         logging.error(f"OpenAI API error: {e}")
         sys.exit(1)
     except Exception as e:
         logging.error(f"An unexpected error occurred during the API call: {e}")
         sys.exit(1)
 
-# NEW: Helper function to reduce repetition in input resolution.
+def export_document(markdown_content: str, output_path: str, export_format: str):
+    """Exports Markdown content to PDF or DOCX using Pandoc."""
+    try:
+        import pypandoc
+    except ImportError as e:
+        raise RuntimeError("Missing pypandoc. Install with: pip install pypandoc-binary") from e
+    
+    logging.info(f"Exporting to {export_format.upper()} format at -> {output_path}")
+    try:
+        pypandoc.convert_text(
+            markdown_content,
+            to=export_format,
+            format='md',
+            outputfile=output_path,
+            extra_args=['--from=markdown']
+        )
+        logging.info(f"Successfully exported {output_path}")
+    except Exception as e:
+        logging.error(f"Failed to export to {export_format.upper()}. Error: {e}")
+        if export_format == 'pdf':
+            logging.warning("PDF export requires a LaTeX distribution (like MiKTeX, MacTeX, or TeX Live) to be installed on your system.")
+        sys.exit(1)
+
 def _get_content_from_source(source_path: Optional[str], fallback_path: str) -> str:
     """Reads content from a source path if provided, otherwise from a fallback path."""
     path_to_read = None
     content_to_use = None
     
-    # Prioritize the command-line argument
     if source_path and os.path.isfile(source_path):
         path_to_read = source_path
-    # Use fallback if no argument is provided
     elif not source_path and os.path.isfile(fallback_path):
         path_to_read = fallback_path
-    # If fallback is not a file, treat it as inline content
     elif not source_path:
         content_to_use = fallback_path
 
@@ -138,12 +148,10 @@ def _get_content_from_source(source_path: Optional[str], fallback_path: str) -> 
     if content_to_use:
         return content_to_use
     
-    return "" # Return empty string if no valid source found
+    return ""
 
-# UPDATE: Simplified and more robust input resolution logic.
 def resolve_inputs(args) -> tuple[str, str]:
     """Resolves and validates resume and job description content from arguments or fallbacks."""
-    # Resolve resume content
     resume_content = ""
     if args.resume_md:
         resume_content = read_text(args.resume_md)
@@ -151,13 +159,11 @@ def resolve_inputs(args) -> tuple[str, str]:
         resume_content = extract_pdf_text(args.resume_pdf)
     elif args.resume_docx:
         resume_content = extract_docx_text(args.resume_docx)
-    else: # Fallback to module-level variable if no CLI arg is given
+    else:
         resume_content = _get_content_from_source(None, CONFIG["fallback_resume"])
 
-    # Resolve job description content
     jd_content = _get_content_from_source(args.jd, CONFIG["fallback_jd"])
 
-    # Validation
     if not resume_content.strip():
         logging.error("Resume content is empty. Please provide a valid resume source.")
         sys.exit(1)
@@ -171,24 +177,22 @@ def main():
     """Main execution function."""
     parser = argparse.ArgumentParser(description="Tailor a resume to a job description via OpenAI.")
     
-    # NEW: Mutually exclusive group ensures only one resume type can be provided.
     resume_group = parser.add_mutually_exclusive_group(required=False)
     resume_group.add_argument("--resume-md", help="Path to a Markdown resume file.")
     resume_group.add_argument("--resume-pdf", help="Path to a PDF resume file.")
-    resume_group.add_argument("--resume-docx", help="Path to a DOCX resume file.") # NEW
+    resume_group.add_argument("--resume-docx", help="Path to a DOCX resume file.")
     
     parser.add_argument("--jd", help="Path to a text file with the job description.")
     parser.add_argument("--out", default=CONFIG["default_output_file"], help="Output Markdown file.")
     parser.add_argument("--model", default=CONFIG["default_model"], help=f"OpenAI model to use (default: {CONFIG['default_model']}).")
     parser.add_argument("--temperature", type=float, default=CONFIG["default_temp"], help=f"Sampling temperature (default: {CONFIG['default_temp']}).")
-    
-    # NEW: Dry run flag to check the prompt without calling the API.
     parser.add_argument("--dry-run", action="store_true", help="Print the prompt and exit without calling the API.")
-    
+    parser.add_argument("--export-format", choices=['pdf', 'docx'], help="Export the final resume to PDF or DOCX format.")
+
     args = parser.parse_args()
 
     if not OPENAI_API_KEY:
-        sys.exit() # The warning has already been logged.
+        sys.exit()
 
     try:
         resume, jd = resolve_inputs(args)
@@ -199,13 +203,12 @@ def main():
             print(prompt)
             sys.exit(0)
 
-        logging.info(f"Sending request to '{args.model}'... (temperature={args.temperature})")
+        logging.info(f"Sending request to '{args.model}'...")
         
-        # UPDATE: Handle streaming output for better UX.
         full_response = []
         print("--- Tailored Resume ---")
         for content_chunk in call_openai(prompt, model=args.model, temperature=args.temperature):
-            print(content_chunk, end="", flush=True) # Print to console in real-time
+            print(content_chunk, end="", flush=True)
             full_response.append(content_chunk)
         print("\n-----------------------")
 
@@ -213,8 +216,12 @@ def main():
 
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(tailored_md.strip() + "\n")
-
         logging.info(f"Successfully wrote tailored resume to → {args.out}")
+
+        if args.export_format:
+            base_output_path = os.path.splitext(args.out)[0]
+            export_path = f"{base_output_path}.{args.export_format}"
+            export_document(tailored_md, export_path, args.export_format)
 
     except Exception as e:
         logging.error(f"An unexpected error occurred in the main process: {e}")
