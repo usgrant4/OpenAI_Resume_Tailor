@@ -89,11 +89,6 @@ Follow these steps to set up the project on your local machine.
     ```env
     OPENAI_API_KEY="sk-YourSecretApiKeyHere"
     ```
-4.  **Install LaTeX for PDF Export (Optional) ⚠️**
-    To export files to PDF, Pandoc requires a system-level LaTeX distribution. This is a one-time, external installation.
-      * **Windows**: Install [MiKTeX](https://miktex.org/)
-      * **macOS**: Install [MacTeX](https://www.tug.org/mactex/)
-      * **Linux**: Install TeX Live (e.g., `sudo apt-get install texlive-full`)
 
 -----
 
@@ -139,6 +134,15 @@ You can run the script directly from your GitHub repository's "Actions" tab.
       * Fill in the input fields. The **"Export format"** field is a dropdown menu where you can select `none`, `docx`, or `pdf` for your output.
 
       * Click the final "Run workflow" button to start. The generated files will be available as downloadable **artifacts** on the workflow summary page.
+
+-----
+
+## 🎨 Custom Styling
+
+You can easily change the look and feel of your exported documents by editing the files in the `styling/` folder.
+
+* **PDF Styling**: To change the PDF's appearance (fonts, colors, margins), simply edit the `styling/style.css` file.
+* **DOCX Styling**: To change the DOCX's appearance, open the `styling/reference.docx` file in Microsoft Word or Google Docs. Modify the default styles (e.g., "Normal", "Heading 1") and page layout, then save the file. The script will use your saved styles for all future DOCX exports.
 
 -----
 

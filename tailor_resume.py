@@ -109,26 +109,45 @@ def call_openai(prompt: str, model: str, temperature: float):
         sys.exit(1)
 
 def export_document(markdown_content: str, output_path: str, export_format: str):
-    """Exports Markdown content to PDF or DOCX using Pandoc."""
+    """Exports Markdown content to PDF or DOCX using Pandoc, applying custom styles."""
     try:
         import pypandoc
     except ImportError as e:
         raise RuntimeError("Missing pypandoc. Install with: pip install pypandoc-binary") from e
     
     logging.info(f"Exporting to {export_format.upper()} format at -> {output_path}")
+    
+    extra_args = ['--from=markdown']
+    
+    # --- Apply styling based on the export format ---
+    if export_format == 'pdf':
+        style_path = 'styling/style.css'
+        extra_args.append('--pdf-engine=weasyprint')
+        if os.path.exists(style_path):
+            extra_args.append(f'--css={style_path}')
+            logging.info(f"Applying CSS style from: {style_path}")
+        else:
+            logging.warning(f"CSS style file not found at {style_path}. Using default styling.")
+
+    elif export_format == 'docx':
+        style_path = 'styling/reference.docx'
+        if os.path.exists(style_path):
+            extra_args.append(f'--reference-doc={style_path}')
+            logging.info(f"Applying DOCX styles from: {style_path}")
+        else:
+            logging.warning(f"Reference DOCX not found at {style_path}. Using default styling.")
+
     try:
         pypandoc.convert_text(
             markdown_content,
             to=export_format,
             format='md',
             outputfile=output_path,
-            extra_args=['--from=markdown']
+            extra_args=extra_args
         )
         logging.info(f"Successfully exported {output_path}")
     except Exception as e:
         logging.error(f"Failed to export to {export_format.upper()}. Error: {e}")
-        if export_format == 'pdf':
-            logging.warning("PDF export requires a LaTeX distribution (like MiKTeX, MacTeX, or TeX Live) to be installed on your system.")
         sys.exit(1)
 
 def _get_content_from_source(source_path: Optional[str], fallback_path: str) -> str:
