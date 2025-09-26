@@ -105,6 +105,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: ${{ steps.prep.outputs.command }}
 
+      - name: 'List Files in Workspace'
+        run: ls -R
+
       - name: 'Upload Artifacts'
         if: github.event.inputs.dry_run == 'false' || (github.event_name == 'push' && github.event.inputs.dry_run != 'true')
         uses: actions/upload-artifact@v4
