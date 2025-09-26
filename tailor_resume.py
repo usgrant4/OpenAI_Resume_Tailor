@@ -76,6 +76,8 @@ You are an expert resume editor who writes concise, professional Markdown tailor
 
 Tailor my skills, experiences, and achievements to highlight the most relevant points for this specific position. Where appropriate, integrate keywords and phrases from the job description naturally (no keyword stuffing). The final resume must be metrics-oriented and easily scannable.
 
+IMPORTANT: Ensure all headings, lists, and paragraphs are separated by proper line breaks to maintain a valid and clean Markdown structure.
+
 Return ONLY the updated resume in Markdown format.
 
 ### My Resume:
