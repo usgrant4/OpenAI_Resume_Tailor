@@ -2,35 +2,57 @@
 /* A professional, clean stylesheet for resumes */
 
 body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    line-height: 1.6;
+    font-family: Calibri, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.5;
     color: #333;
     background-color: #fff;
-    margin: 40px auto;
+    margin: 30px auto;
     max-width: 800px;
-    padding: 0 20px;
+    padding: 0 30px;
 }
 
-h1, h2, h3 {
-    font-family: 'Georgia', serif;
-    color: #111;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 5px;
-    margin-top: 1.5em;
-}
-
+/* NAME AT THE TOP */
 h1 {
-    font-size: 2em;
+    font-family: 'Georgia', serif;
+    font-size: 2.5em;
+    color: #111;
     text-align: center;
     border-bottom: none;
+    margin-bottom: 0.1em;
+    font-weight: bold;
 }
 
+/* CONTACT INFO (PARAGRAPH IMMEDIATELY AFTER NAME) */
+h1 + p {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 2em;
+    font-size: 0.9em;
+}
+
+/* SECTION HEADERS (Professional Summary, etc.) */
 h2 {
-    font-size: 1.5em;
+    font-family: 'Georgia', serif;
+    font-size: 1.4em;
+    color: #111;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+    margin-top: 1.8em;
+    margin-bottom: 1em;
+}
+
+/* JOB TITLES / COMPANY */
+h3 {
+    font-family: Calibri, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.1em;
+    color: #222;
+    border-bottom: none;
+    margin-bottom: 0.2em;
+    font-weight: bold;
 }
 
 a {
-    color: #0077cc;
+    color: #005a9c; /* A professional blue */
     text-decoration: none;
 }
 
@@ -40,12 +62,14 @@ a:hover {
 
 ul {
     padding-left: 20px;
+    list-style-type: disc;
 }
 
 li {
-    margin-bottom: 0.5em;
+    margin-bottom: 0.6em;
 }
 
 p, li {
     color: #444;
+    text-align: justify;
 }
