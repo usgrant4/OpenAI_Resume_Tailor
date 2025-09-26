@@ -1,7 +1,6 @@
 name: 'Manual Resume Tailor'
 
 on:
-  # This keeps the manual "Run workflow" button in the Actions tab
   workflow_dispatch:
     inputs:
       resume_path:
@@ -31,11 +30,9 @@ on:
         type: boolean
         default: false
 
-  # This adds an automatic trigger for push events to the specified branches
   push:
     branches:
       - main
-      - dev
 
 jobs:
   tailor-resume:
@@ -51,7 +48,6 @@ jobs:
           python-version: '3.11'
 
       - name: 'Install LaTeX (for PDF export)'
-        # This condition now checks both manual and push events
         if: github.event.inputs.export_format == 'pdf'
         run: |
           sudo apt-get update
@@ -62,19 +58,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 'Build the Command'
-        id: build_command
+      - name: 'Prepare Execution Paths and Command'
+        id: prep
         run: |
-          # --- Set default values for automatic push events ---
-          # If run manually, these will be replaced by user inputs.
-          # If run by push, these defaults will be used.
-          RESUME_PATH="${{ github.event.inputs.resume_path || 'resume/Ulysses_Grant.md' }}"
-          JD_PATH="${{ github.event.inputs.jd_path || 'resume/job_description.md' }}"
+          # --- Set file paths, using defaults for push events ---
           OUTPUT_PATH="${{ github.event.inputs.output_path || 'Tailored_Resume.md' }}"
           EXPORT_FORMAT="${{ github.event.inputs.export_format || 'none' }}"
-          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          
+          echo "output_path=$OUTPUT_PATH" >> $GITHUB_OUTPUT
 
-          # --- Construct the command string ---
+          if [[ "$EXPORT_FORMAT" != "none" ]]; then
+            BASE_PATH=$(echo "$OUTPUT_PATH" | rev | cut -f 2- -d '.' | rev)
+            EXPORTED_PATH="$BASE_PATH.$EXPORT_FORMAT"
+            echo "exported_file_path=$EXPORTED_PATH" >> $GITHUB_OUTPUT
+          fi
+
+          # --- Build the command ---
+          RESUME_PATH="${{ github.event.inputs.resume_path || 'resume/Ulysses_Grant.md' }}"
+          JD_PATH="${{ github.event.inputs.jd_path || 'resume/job_description.md' }}"
+          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          
           CMD="python tailor_resume.py --out $OUTPUT_PATH"
           
           if [[ "$RESUME_PATH" == *.pdf ]]; then
@@ -94,31 +97,20 @@ jobs:
           if [[ "$DRY_RUN" == "true" ]]; then
             CMD="$CMD --dry-run"
           fi
-          
+
           echo "command=$CMD" >> $GITHUB_OUTPUT
           
-          # --- Calculate the exported file path for the artifact upload step ---
-          if [[ "$EXPORT_FORMAT" != "none" ]]; then
-            BASE_PATH=$(echo "$OUTPUT_PATH" | rev | cut -f 2- -d '.' | rev)
-            EXPORTED_PATH="$BASE_PATH.$EXPORT_FORMAT"
-            echo "exported_file_path=$EXPORTED_PATH" >> $GITHUB_OUTPUT
-          else
-            echo "exported_file_path=" >> $GITHUB_OUTPUT
-          fi
-
-
       - name: 'Run Python Script'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: ${{ steps.build_command.outputs.command }}
+        run: ${{ steps.prep.outputs.command }}
 
       - name: 'Upload Artifacts'
-        # This condition checks the manual input OR the event name for pushes
         if: github.event.inputs.dry_run == 'false' || (github.event_name == 'push' && github.event.inputs.dry_run != 'true')
         uses: actions/upload-artifact@v4
         with:
           name: tailored-documents
           path: |
-            ${{ github.event.inputs.output_path || 'Tailored_Resume.md' }}
-            ${{ steps.build_command.outputs.exported_file_path }}
+            ${{ steps.prep.outputs.output_path }}
+            ${{ steps.prep.outputs.exported_file_path }}
           retention-days: 3
