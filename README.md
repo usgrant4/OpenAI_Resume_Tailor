@@ -104,7 +104,6 @@ You can run the script directly from your GitHub repository's "Actions" tab.
       * Select the **Manual Resume Tailor** workflow.
       * Click the **Run workflow** button.
       * Fill in the input fields for your file paths and export options, then run the workflow.
-      * 
       * The generated files will be available as downloadable **artifacts** on the workflow summary page.
 
 -----
