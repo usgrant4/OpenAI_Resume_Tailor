@@ -15,7 +15,7 @@ This project automates the process of **tailoring a resume** to a specific job d
   * **Flexible Export Options**: Outputs the tailored resume in **Markdown**, and can also export to **PDF** or **DOCX** using Pandoc.
   * **Manual GitHub Action**: Run the entire process from your browser with a one-click manual GitHub Action workflow.
   * **Safe Dry-Run Mode**: A `--dry-run` flag lets you preview the exact prompt that will be sent to the API without incurring costs.
-  * **Secure Configuration**: Uses a `.env` file to keep your API key safe and out of the source code.
+  * **Secure Configuration**: Uses a `.env` file to keep your API key safe and out of the source code for local testing only.
 
 -----
 
