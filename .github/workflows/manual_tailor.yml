@@ -1,5 +1,3 @@
-# .github/workflows/manual_tailor.yml
-
 name: 'Manual Resume Tailor'
 
 on:
